@@ -38,22 +38,34 @@ public class Task1 extends Configured implements Tool{
         return job.waitForCompletion(true) ? 0 : 1;
     }
     
-    public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
+    public static class Map extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
 
+        private IntWritable v = new IntWritable();
+        private IntWritable weight = new IntWritable();
+        
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             String tokens[] = line.split("\t");
+            v.set(Integer.valueOf(tokens[1]));
+            weight.set(Integer.valueOf(tokens[2]));
             
+            context.write(v, weight);
         }
         
     }
     
-    public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
+    public static class Reduce extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
 
         @Override
-        protected void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+        protected void reduce(IntWritable v, Iterable<IntWritable> weights, Context context) throws IOException, InterruptedException {
+            int sum = 0;
             
+            for (IntWritable weight: weights) {
+                sum += weight.get();
+            }
+            
+            context.write(v, new IntWritable(sum));
         }
         
     }
