@@ -1,7 +1,6 @@
 package edu.gatech.cse6242;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -40,17 +39,17 @@ public class Task1 extends Configured implements Tool{
     
     public static class Map extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
 
-        private IntWritable v = new IntWritable();
+        private IntWritable target = new IntWritable();
         private IntWritable weight = new IntWritable();
         
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             String tokens[] = line.split("\t");
-            v.set(Integer.valueOf(tokens[1]));
+            target.set(Integer.valueOf(tokens[1]));
             weight.set(Integer.valueOf(tokens[2]));
             
-            context.write(v, weight);
+            context.write(target, weight);
         }
         
     }
@@ -58,14 +57,14 @@ public class Task1 extends Configured implements Tool{
     public static class Reduce extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
 
         @Override
-        protected void reduce(IntWritable v, Iterable<IntWritable> weights, Context context) throws IOException, InterruptedException {
+        protected void reduce(IntWritable target, Iterable<IntWritable> weights, Context context) throws IOException, InterruptedException {
             int sum = 0;
             
             for (IntWritable weight: weights) {
                 sum += weight.get();
             }
             
-            context.write(v, new IntWritable(sum));
+            context.write(target, new IntWritable(sum));
         }
         
     }
